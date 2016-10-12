@@ -1,6 +1,30 @@
 Lua LPeg
 ====
+
 [Parsing Expression Grammars For Lua](http://www.inf.puc-rio.br/~roberto/lpeg/)
+
+
+Table of Contents
+====
+
+* [Introduction](#introduction)
+* [Functions](#functions)
+* [Grammars](#grammars)
+* [Captures](#captures)
+* [Some Examples](#some-examples)
+    * [Using a Pattern](#using-a-pattern)
+    * [Name-value lists](#name-value-lists)
+    * [Splitting a string](#splitting-a-string)
+    * [Searching for a pattern](#searching-for-a-pattern)
+    * [Balanced parentheses](#balanced-parentheses)
+    * [Global substitution](#global-substitution)
+    * [Comma-Separated Values (CSV)](#comma-separated-values-csv)
+    * [UTF-8 and Latin 1](#utf-8-and-latin-1)
+    * [UTF-8 and Unicode](#utf-8-and-unicode)
+    * [Lua's long strings](#luas-long-strings)
+    * [Arithmetic expressions](#arithmetic-expressions)
+* [Download](#download)
+* [License](#license)
 
 
 ## Introduction
@@ -47,10 +71,10 @@ be written as `lpeg.P(-1)`, or simply -1 for operations expecting a pattern)
 matches an empty string only if it cannot match a single character; so, it
 succeeds only at the end of the subject.
 
-LPeg also offers the re module, which implements patterns following a
-regular-expression style (e.g., `[09]+`). (This module is 260 lines of Lua code,
-and of course it uses LPeg to parse regular expressions and translate them to
-regular LPeg patterns.)
+LPeg also offers the [re module](http://www.inf.puc-rio.br/~roberto/lpeg/re.html),
+which implements patterns following a regular-expression style (e.g., `[09]+`).
+(This module is 260 lines of Lua code, and of course it uses LPeg to parse
+regular expressions and translate them to regular LPeg patterns.)
 
 
 ## Functions
@@ -59,8 +83,8 @@ lpeg.match (pattern, subject [, init])
 ----
 The matching function. It attempts to match the given pattern against the
 subject string. If the match succeeds, returns the index in the subject of the
-first character after the match, or the captured values (if the pattern captured
-any value).
+first character after the match, or the [captured values](#captures) (if the
+pattern captured any value).
 
 An optional numeric argument init makes the match start at that position in the
 subject string. As usual in Lua libraries, a negative value counts from the end.
@@ -70,7 +94,7 @@ that is, it tries to match the pattern with a prefix of the given subject string
 (at position init), not with an arbitrary substring of the subject. So, if we
 want to find a pattern anywhere in a string, we must either write a loop in Lua
 or write a pattern that matches anywhere. This second approach is easy and quite
-efficient; see examples.
+efficient; see [examples](#some-examples).
 
 lpeg.type (value)
 ----
@@ -166,7 +190,7 @@ character that belongs to its class.
 If called with an argument table, then it creates those fields inside the given
 table and returns that table.
 
-#patt
+\#patt
 ----
 Returns a pattern that matches only if the input string matches `patt`, but
 without consuming any input, independently of success or failure. (This pattern
@@ -228,8 +252,8 @@ denoting concatenation.)
 
 patt^n
 ----
-If `n` is nonnegative, this pattern is equivalent to $patt^n$ patt*: It matches
-`n` or more occurrences of `patt`.
+If `n` is nonnegative, this pattern is equivalent to $patt^n$ `patt*`: It
+matches `n` or more occurrences of `patt`.
 
 Otherwise, when n is negative, this pattern is equivalent to $(patt?)^{-n}$: It
 matches at most `|n|` occurrences of patt.
