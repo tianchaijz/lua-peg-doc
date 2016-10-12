@@ -664,7 +664,7 @@ function gsub (s, patt, repl)
 end
 ```
 
-As in string.gsub, the replacement value can be a string, a function, or a
+As in `string.gsub`, the replacement value can be a string, a function, or a
 table.
 
 ### Comma-Separated Values (CSV)
