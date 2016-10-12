@@ -9,6 +9,7 @@ Table of Contents
 
 * [Introduction](#introduction)
 * [Functions](#functions)
+* [Basic Constructions](#basic-constructions)
 * [Grammars](#grammars)
 * [Captures](#captures)
 * [Some Examples](#some-examples)
@@ -34,7 +35,8 @@ Grammars (PEGs)](http://bford.info/packrat/). This text is a reference manual
 for the library. For a more formal treatment of LPeg, as well as some discussion
 about its implementation, see [A Text Pattern-Matching Tool based on Parsing
 Expression Grammars](http://www.inf.puc-rio.br/~roberto/docs/peg.pdf). (You may
-also be interested in my talk about LPeg given at the III Lua Workshop.)
+also be interested in my [talk about LPeg](https://vimeo.com/1485123) given at
+the III Lua Workshop.)
 
 Following the Snobol tradition, LPeg defines patterns as first-class objects.
 That is, patterns are regular Lua values (represented by userdata). The library
@@ -50,20 +52,20 @@ extensible, as we can define new functions to create and compose patterns.
 For a quick glance of the library, the following table summarizes its basic
 operations for creating patterns:
 
-Operator         | Description
-:----            | :----
-`lpeg.P(string)` | Matches string literally
-`lpeg.P(n)`      | Matches exactly `n` characters
-`lpeg.S(string)` | Matches any character in string (Set)
-`lpeg.R("xy")`   | Matches any character between `x` and `y` (Range)
-`patt^n`         | Matches at least `n` repetitions of `patt`
-`patt^-n`        | Matches at most `n` repetitions of `patt`
-`patt1 * patt2`  | Matches `patt1` followed by `patt2`
-`patt1 + patt2`  | Matches `patt1` or `patt2` (ordered choice)
-`patt1 - patt2`  | Matches `patt1` if `patt2` does not match
-`-patt`          | Equivalent to (`"" - patt`)
-`#patt`          | Matches `patt` but consumes no input
-`lpeg.B(patt)`   | Matches `patt` behind the current position, consuming no input
+Operator                         | Description
+:----                            | :----
+[lpeg.P(string)](#lpegp-value)   | Matches string literally
+[lpeg.P(n)](#lpegp-value)        | Matches exactly `n` characters
+[lpeg.S(string)](#lpegs-string)  | Matches any character in string (Set)
+[lpeg.R("xy")](#lpegr-range)     | Matches any character between `x` and `y` (Range)
+[patt^n](#pattn)                 | Matches at least `n` repetitions of `patt`
+[patt^-n](#pattn)                | Matches at most `n` repetitions of `patt`
+[patt1 * patt2](#patt1--patt2-1) | Matches `patt1` followed by `patt2`
+[patt1 + patt2](#patt1--patt2)   | Matches `patt1` or `patt2` (ordered choice)
+[patt1 - patt2](#patt1---patt2)  | Matches `patt1` if `patt2` does not match
+[-patt](#-patt)                  | Equivalent to (`"" - patt`)
+[#patt](#patt)                   | Matches `patt` but consumes no input
+[lpeg.B(patt)](#lpegbpatt)       | Matches `patt` behind the current position, consuming no input
 
 As a very simple example, `lpeg.R("09")^1` creates a pattern that matches a
 non-empty sequence of digits. As a not so simple example, `-lpeg.P(1)` (which can
@@ -112,8 +114,10 @@ choices. (The default limit is 400.) Most well-written patterns need little
 backtrack levels and therefore you seldom need to change this limit; before
 changing it you should try to rewrite your pattern to avoid the need for extra
 space. Nevertheless, a few useful patterns may overflow. Also, with recursive
-grammars, subjects with deep recursion may also need larger limits.  Basic
-Constructions
+grammars, subjects with deep recursion may also need larger limits.
+
+
+## Basic Constructions
 
 The following operations build patterns. All operations that expect a pattern as
 an argument may receive also strings, tables, numbers, booleans, or functions,
@@ -134,15 +138,16 @@ exactly n characters.
 
 If the argument is a negative number -n, the result is a pattern that succeeds
 only if the input string has less than n characters left: `lpeg.P(-n)` is
-equivalent to `-lpeg.P(n)` (see the unary minus operation).
+equivalent to `-lpeg.P(n)` (see the [unary minus operation](#-patt)).
 
 If the argument is a boolean, the result is a pattern that always succeeds or
 always fails (according to the boolean value), without consuming any input.
 
-If the argument is a table, it is interpreted as a grammar (see Grammars).
+If the argument is a table, it is interpreted as a grammar (see
+[Grammars](#grammars)).
 
-If the argument is a function, returns a pattern equivalent to a match-time
-capture over the empty string.
+If the argument is a function, returns a pattern equivalent to a
+[match-time capture](#lpegcmtpatt-function) over the empty string.
 
 lpeg.B(patt)
 ----
@@ -177,7 +182,7 @@ lpeg.V (v)
 ----
 This operation creates a non-terminal (a variable) for a grammar. The created
 non-terminal refers to the rule indexed by v in the enclosing grammar. (See
-Grammars for details.)
+[Grammars](#grammars) for details.)
 
 lpeg.locale ([table])
 ----
@@ -319,22 +324,22 @@ may produce zero or more values.
 
 The following table summarizes the basic captures:
 
-Operation                  | What it Produces
-:----                      | :----
-`lpeg.C(patt)`             | the match for `patt` plus all captures made by `patt`
-`lpeg.Carg(n)`             | the value of the `nth` extra argument to `lpeg.match` (matches the empty string)
-`lpeg.Cb(name)`            | the values produced by the previous group capture named `name` (matches the empty string)
-`lpeg.Cc(values)`          | the given `values` (matches the empty string)
-`lpeg.Cf(patt, func)`      | a folding of the captures from `patt`
-`lpeg.Cg(patt [, name])`   | the values produced by `patt`, optionally tagged with `name`
-`lpeg.Cp()`                | the current position (matches the empty string)
-`lpeg.Cs(patt)`            | the match for `patt` with the values from nested captures replacing their matches
-`lpeg.Ct(patt)`            | a table with all captures from `patt`
-`patt / string`            | string, with some marks replaced by captures of `patt`
-`patt / number`            | the `n-th` value captured by `patt`, or no value when number is zero.
-`patt / table`             | `table[c]`, where `c` is the (first) capture of `patt`
-`patt / function`          | the returns of function applied to the captures of `patt`
-`lpeg.Cmt(patt, function)` | the returns of `function` applied to the captures of `patt`; the application is done at match time
+Operation                                         | What it Produces
+:----                                             | :----
+[lpeg.C(patt)](#lpegc-patt)                       | the match for `patt` plus all captures made by `patt`
+[lpeg.Carg(n)](#lpegcarg-n)                       | the value of the `nth` extra argument to `lpeg.match` (matches the empty string)
+[lpeg.Cb(name)](#lpegcb-name)                     | the values produced by the previous group capture named `name` (matches the empty string)
+[lpeg.Cc(values)](#lpegcc-value-)                 | the given `values` (matches the empty string)
+[lpeg.Cf(patt, func)](#lpegcf-patt-func)          | a folding of the captures from `patt`
+[lpeg.Cg(patt [, name])](#lpegcg-patt--name)      | the values produced by `patt`, optionally tagged with `name`
+[lpeg.Cp()](#lpegcp-)                             | the current position (matches the empty string)
+[lpeg.Cs(patt)](#lpegcs-patt)                     | the match for `patt` with the values from nested captures replacing their matches
+[lpeg.Ct(patt)](#lpegct-patt)                     | a table with all captures from `patt`
+[patt / string](#patt--string)                    | string, with some marks replaced by captures of `patt`
+[patt / number](#patt--number)                    | the `n-th` value captured by `patt`, or no value when number is zero.
+[patt / table](#patt--table)                      | `table[c]`, where `c` is the (first) capture of `patt`
+[patt / function](#patt--function)                | the returns of function applied to the captures of `patt`
+[lpeg.Cmt(patt, function)](#lpegcmtpatt-function) | the returns of `function` applied to the captures of `patt`; the application is done at match time
 
 A capture pattern produces its values every time it succeeds. For instance, a
 capture inside a loop produces as many values as matched by the loop. A capture
@@ -347,10 +352,10 @@ Usually, LPeg evaluates all captures only after (and if) the entire match
 succeeds. During match time it only gathers enough information to produce the
 capture values later. As a particularly important consequence, most captures
 cannot affect the way a pattern matches a subject. The only exception to this
-rule is the so-called match-time capture. When a match-time capture matches, it
-forces the immediate evaluation of all its nested captures and then calls its
-corresponding function, which defines whether the match succeeds and also what
-values are produced.
+rule is the so-called [match-time capture](#lpegcmtpatt-function). When a
+match-time capture matches, it forces the immediate evaluation of all its nested
+captures and then calls its corresponding function, which defines whether the
+match succeeds and also what values are produced.
 
 lpeg.C (patt)
 ----
@@ -366,8 +371,8 @@ the value given as the nth extra argument given in the call to `lpeg.match`.
 lpeg.Cb (name)
 ----
 Creates a back capture. This pattern matches the empty string and produces the
-values produced by the most recent group capture named `name` (where `name` can
-be any Lua value).
+values produced by the most recent [group capture](#lpegcg-patt--name) named
+`name` (where `name` can be any Lua value).
 
 Most recent means the last complete outermost group capture with the given
 `name`.  A Complete capture means that the entire pattern corresponding to the
@@ -423,7 +428,7 @@ given `name` (which can be any non-nil Lua value).
 An anonymous group serves to join values from several captures into a single
 capture. A named group has a different behavior. In most situations, a named
 group returns no values at all. Its values are only relevant for a following
-back capture or when used inside a table capture.
+[back capture](#lpegcb-name) or when used inside a [table capture](#lpegct-patt).
 
 lpeg.Cp ()
 ----
@@ -487,7 +492,7 @@ The first value returned by `function` defines how the match happens. If the
 call returns a number, the match succeeds and the returned number becomes the
 new current position. (Assuming a subject `s` and current position `i`, the
 returned number must be in the range `[i, len(s) + 1]`.) If the call returns
-true, the match succeeds without consuming any input. (So, to return true is
+true, the match succeeds without consuming any input. (So, to return `true` is
 equivalent to return `i`.) If the call returns `false`, `nil`, or no value, the
 match fails.
 
