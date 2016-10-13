@@ -17,6 +17,9 @@ local letter = lower + upper
 local alnum = letter + digit
 
 
+local mt = getmetatable(P(0))
+
+
 --------------------------------------------------------------------------------
 -- Notes
 --------------------------------------------------------------------------------
@@ -41,6 +44,19 @@ tostring = function(v)
     end
 
     return _tostring(v)
+end
+
+local _div = mt.__div
+local _add = mt.__add
+
+mt.__div = function(...)
+    print("__div", ...)
+    return _div(...)
+end
+
+mt.__add = function(...)
+    print("__add", ...)
+    return _add(...)
 end
 
 
@@ -133,3 +149,24 @@ print((1 * Cg(C"bc", "FOOO") * C"d" * 1 * Cb"FOOO" * Cb"FOOO"):match"abcde")
 -- the values captured in the named Cg() are not inserted locally
 print((1 * Cg(C"b" * C"c" * C"d", "FOOO") * C"e" * Ct(Cb"FOOO")):match"abcde")
 --> "e", { "b", "c", "d" }
+
+local p = Cc(9, mt.__pow)
+print(p:match"")
+--> 9, function
+
+p = P"+" * p
+print(p:match"+")
+--> 9, function
+
+print(p:match"x")
+--> nil
+
+local I = P(function (s, i) print(i, s:sub(1, i-1)); return i+1 end)
+local p = I * I * I
+print(p:match"abc")
+
+print("==== Cf(folder!) and Cc")
+-- the initial value is the first value produced by the first capture
+Cf(Cc("x", "y", "z") * Cc("b", "c", "d") * Cc("e", "f", "g"), print):match""
+--> x, b, c, d
+--> nil, e, f, g
