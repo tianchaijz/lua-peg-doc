@@ -2,9 +2,9 @@ local lpeg = require "lpeg"
 local cjson = require "cjson.safe"
 
 local encode = cjson.encode
-local R, S, V, P, C, Ct, Cs, Cf, Cmt, Cg, Cb, Cc
-    = lpeg.R, lpeg.S, lpeg.V, lpeg.P, lpeg.C,
-      lpeg.Ct, lpeg.Cs, lpeg.Cf, lpeg.Cmt, lpeg.Cg, lpeg.Cb, lpeg.Cc
+local M, R, S, V, P, C, Ct, Cs, Cf, Cmt, Cg, Cb, Cc, Carg
+    = lpeg.match, lpeg.R, lpeg.S, lpeg.V, lpeg.P, lpeg.C,
+      lpeg.Ct, lpeg.Cs, lpeg.Cf, lpeg.Cmt, lpeg.Cg, lpeg.Cb, lpeg.Cc, lpeg.Carg
 
 
 local any = P(1)         -- pattern that accepts one character
@@ -165,8 +165,28 @@ local I = P(function (s, i) print(i, s:sub(1, i-1)); return i+1 end)
 local p = I * I * I
 print(p:match"abc")
 
-print("==== Cf(folder!) and Cc")
+print("==== Cf(folder) and Cc")
 -- the initial value is the first value produced by the first capture
 Cf(Cc("x", "y", "z") * Cc("b", "c", "d") * Cc("e", "f", "g"), print):match""
 --> x, b, c, d
 --> nil, e, f, g
+
+print("==== Carg")
+print(M(m.Carg(1), 'a', 1, print) == print)
+--> true
+print(Carg(1) * Carg(2):match("", 1, "a", "b"))
+--> a, b
+
+local name = R("AZ", "az", "__") * R("AZ", "az", "__", "09")^0
+name = C(name)
+local def = name * Carg(1)
+
+print(def:match("id", 1, print))
+-- print
+
+local p = Cmt(C((alpha * digit)^1) * Carg(1), function(_, _, m, fn)
+    fn(m)
+    return true
+end)
+p = (p + 1)^1
+print(p:match("abcd0xe1f3opam", 1, print))
