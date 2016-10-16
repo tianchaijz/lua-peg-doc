@@ -1,4 +1,13 @@
 *.DS_Store
 *.Trashes
 
+*.o
+*.a
+*.so
+*.dylib
+*.dSYM
+tags
+*/tags
 *.swp
+
+*.tar.gz
