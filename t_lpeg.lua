@@ -150,6 +150,24 @@ print((1 * Cg(C"bc", "FOOO") * C"d" * 1 * Cb"FOOO" * Cb"FOOO"):match"abcde")
 print((1 * Cg(C"b" * C"c" * C"d", "FOOO") * C"e" * Ct(Cb"FOOO")):match"abcde")
 --> "e", { "b", "c", "d" }
 
+print("==== Cg /")
+local p1 = Cc(true) * Cc("X")
+local p2 = Cg(Cc(true), "G") * Cc("Y") / print
+print("==== Cg, p2")
+print(p2:match"")
+--> Y
+--> 1
+print("==== Cg, p1 * p2")
+print((p1 * p2):match"")
+--> Y
+--> ture, X
+
+print("==== Cg, inline")
+local p1 = Cc(true) * Cc("X")
+local p2 = p1 * Cg(Cc(true)) * Cc("Y") / print
+print(p2:match"")
+--> true, X, true, Y
+--> 1
 local p = Cc(9, mt.__pow)
 print(p:match"")
 --> 9, function
@@ -190,3 +208,21 @@ local p = Cmt(C((alpha * digit)^1) * Carg(1), function(_, _, m, fn)
 end)
 p = (p + 1)^1
 print(p:match("abcd0xe1f3opam", 1, print))
+
+print(M(Cs((C(1)/{a=".", d=".."})^0), "abcdde"))
+print(M(Ct((C(1)/{a=".", d=".."})^0), "abcdde"))
+
+
+print("==== class")
+local alpha = C(alpha)
+local class = "["
+              * Cc("X")
+              * C(P"^"^-1)
+              * Cf(alpha * (alpha - "]")^0, mt.__add)
+              / function (x, c, p) print("div__", x, c == "", p) return c == "^" and 1 - p or p end
+              * "]"
+print("class", class:match"[abc]")
+
+
+local p = P"-" / ""
+print(p:match"-" == "")
