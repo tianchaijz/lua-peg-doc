@@ -244,9 +244,9 @@ print(p:match"-" == "")
 --------------------------------------------------------------------------------
 local function inspect(p)
     print("==== ptree")
-    lpeg.ptree(p)
+    -- lpeg.ptree(p)
     print("==== pcode")
-    lpeg.pcode(p)
+    -- lpeg.pcode(p)
 end
 
 local p = (P"-" * R"az" * R"AZ" * S"19")^3
@@ -284,3 +284,24 @@ local searchParser = (lpeg.C(FULL_COMMENT_CONTENTS) + 1)^0
 -- Suggestion by Roberto to make the search faster
 -- Works because it loops fast over all non-slashes, then it begins the slower match phase
 local searchParser = ((1 - lpeg.P"/")^0 * (lpeg.C(FULL_COMMENT_CONTENTS) + 1))^0
+
+
+local xdigit = lpeg.xdigit
+local int = digit^1
+local sign = S"-+"^-1
+local exp = S"Ee" * S"+-"^-1 * int
+local decimal = digit^1 * P"." * digit^0 + P"." * int
+local float = decimal * exp^-1 + int * exp
+local hex = (P"0" * S"xX") * C(xdigit^1)
+local number = C(sign) * (hex * Cc(0) * Cc(16) + C(float) * Cc(1) + C(int)) / print
+
+number:match("0x111")
+number:match("111")
+number:match("111.11")
+number:match("123e10")
+number:match("123.4e-10")
+number:match("-0x111")
+number:match("-111")
+number:match("-111.11")
+number:match("-123e10")
+number:match("-123.4e-10")
